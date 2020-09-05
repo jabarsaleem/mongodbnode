@@ -4,7 +4,10 @@ const assert = require('assert');
 
 const url = 'mongodb://localhost:27017/';
 
-const dbname= 'express';
+const dbname = 'express';
+
+const dbopp = require('./ops');
+
 
 mongodbclient.connect(url, (err, client) => {
 
@@ -14,25 +17,29 @@ mongodbclient.connect(url, (err, client) => {
 
     const db = client.db(dbname);
 
-   
 
-    const collection = db.collection("expressnode");
+    dbopp.insertDocument(db,{ name: "javed", description: "lives in lahore" },
+        "expressnode", (result) => 
+        {
+            console.log("Insert Document:\n", result.ops);
 
-    collection.insertOne({ "name": "ali", "description": "ali is from lahore" },
-        (err, result) => {
-            assert.equal(err, null);
+            dbopp.findDocuments(db, "expressnode", (docs) => 
+            {
+                console.log("Found Documents:\n", docs);
 
-            console.log("After Insert:\n");
-            console.log(result.ops);
+                dbopp.updateDocument(db, { name: "javed" },
+                    { name:"asad",description: "Moved to islamabad" }, "expressnode",
+                    (result) => 
+                    {
+                        console.log("Updated Document:\n", result.result);
 
-            collection.find({}).toArray((err, docs) => {
-                assert.equal(err, null);
+                        dbopp.findDocuments(db, "expressnode", (docs) => 
+                        {
+                            console.log("Found Updated Documents:\n", docs);
 
-                console.log("Found:\n");
-                console.log(docs);
-                client.close();
-
-
+                            
+                        });
+                    });
             });
         });
 
